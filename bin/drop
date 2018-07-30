@@ -1,0 +1,13 @@
+#!/usr/bin/env php
+<?php
+include(__DIR__ . "/params.php");
+
+require 'vendor/autoload.php';
+
+echo "drop... \n";
+
+//mongodb
+$camerasCollection = (new MongoDB\Client($params_mongodb_uri))->randcam->cameras;
+$camerasCollection->drop();
+
+echo "dropped! \n";

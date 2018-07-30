@@ -1,0 +1,59 @@
+#!/usr/bin/env php
+<?php
+use Respect\Validation\Validator as v;
+
+include(__DIR__ . "/params.php");
+
+require 'vendor/autoload.php';
+
+
+echo "adding... \n";
+
+//mongodb
+$camerasCollection = (new MongoDB\Client($params_mongodb_uri))->randcam->cameras;
+
+if (!isset($argv[1])) {
+  echo "url not found \n";
+  exit();
+}else{
+  $url = $argv[1];
+}
+$client = new \GuzzleHttp\Client();
+if(v::url()->validate($url)){
+  try{
+    $response = $client->get($url, ['connect_timeout' => $params_timeout, 'http_errors' => false]);
+  }catch(GuzzleHttp\Exception\ConnectException $e){
+    echo "timed out! \n ";
+  }
+  if(isset($response)){
+    if($response->getStatusCode() == 200){
+      //verify if image
+      if($response->getHeader('Content-Type')[0] == "image/jpeg" || $response->getHeader('Content-Type')[0] == "image/png"){
+        echo "inserting...   -- ";
+        //VERIFY if already exist
+        if ($camerasCollection->findOne(['url' => $url]) == NULL){
+          //not exist
+          $insertOneResult = $camerasCollection->insertOne([
+            'url' => $url
+          ]);
+          if($insertOneResult->getInsertedCount() == 1){
+            echo "inserted! \n";
+          }
+        }else{
+          //exist
+          echo "Already exist \n";
+        }
+      }else{
+        echo "http error header content type not sending a image jpeg|png \n";
+      }
+    }else{
+        echo "http error code not responding a 200 code \n";
+    }
+  }
+}else{
+  echo "Invalid url : not a valid url! \n";
+}
+//validate
+//request
+//timeout
+//insert in mongodb

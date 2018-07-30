@@ -1,0 +1,34 @@
+#!/usr/bin/env php
+<?php
+include(__DIR__ . "/params.php");
+
+require 'vendor/autoload.php';
+
+if (isset($argv[1])) {
+  $count = $argv[1];
+}else{
+  $count = 5;
+}
+echo "generate random... {$count} \n \n";
+
+$client = new \GuzzleHttp\Client();
+
+$data = "";
+for ($i=0; $i < $count; $i++) {
+  $camerasCollection = (new MongoDB\Client($params_mongodb_uri))->randcam->cameras;
+  $cameras = $camerasCollection->find([], [
+    'limit' => 1,
+    'skip' => rand(0, $camerasCollection->countDocuments())
+  ]);
+  foreach ($cameras as $camera) {
+      $content = rand(20,999);
+      try {
+        $content = $client->get($camera['url'])->getBody()->getContents();
+      }catch (\Exception $exception){
+          echo "E: HTTP exception \n";
+      }
+    $data .= hash('sha512', $content);
+  };
+}
+
+echo $data . " \n";

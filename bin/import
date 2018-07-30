@@ -1,0 +1,73 @@
+#!/usr/bin/env php
+<?php
+use Respect\Validation\Validator as v;
+
+include(__DIR__ . "/params.php");
+
+require 'vendor/autoload.php';
+
+echo "Import... \n";
+
+//import all url from to_import folder
+
+$urls = [];
+
+foreach (array_filter(glob(__DIR__ . '/../import/*.json'), 'is_file') as $file)
+{
+    // Do something with $file
+    $data = json_decode(file_get_contents($file), true);
+    $urls = array_merge($data, $urls);
+}
+
+//mongodb
+$camerasCollection = (new MongoDB\Client($params_mongodb_uri))->randcam->cameras;
+
+$client = new \GuzzleHttp\Client();
+foreach($urls as $url){
+  echo "\n" . $url . "\n";
+  if(v::url()->validate($url)){
+    try{
+      $response = $client->get($url, ['connect_timeout' => $params_timeout, 'http_errors' => false]);
+      $error = false;
+    }catch(\Exception $e){
+      echo "E: Connection error|timed out! \n ";
+      $error = true;
+    }
+    if($error == false && isset($response)){
+      if($response->getStatusCode() == 200){
+        //verify if image
+        $contentType = $response->getHeader('Content-Type')[0];
+        if (
+          $contentType == "image/jpeg"
+          || $contentType == "image/png"
+          || explode(';', $contentType)[0]
+        ) {
+          echo "inserting...  <> ";
+          //VERIFY if already exist
+          if ($camerasCollection->findOne(['url' => $url]) == NULL){
+            //not exist
+            $insertOneResult = $camerasCollection->insertOne([
+              'url' => $url
+            ]);
+            if($insertOneResult->getInsertedCount() == 1){
+              echo "S: Inserted! \n";
+            }
+          }else{
+            //exist
+            echo "E: Already exist \n";
+          }
+        }else{
+          echo "E: Http error header content type not sending a image jpeg|png \n";
+        }
+      }else{
+          echo "E: Http error code not responding a 200 code \n";
+      }
+    }
+  }else{
+    echo "Invalid url : not a valid url! \n";
+  }
+  //validate
+  //request
+  //timeout
+  //insert in mongodb
+}

@@ -1,0 +1,21 @@
+#!/usr/bin/env php
+<?php
+include(__DIR__ . "/params.php");
+
+require 'vendor/autoload.php';
+
+echo "generate random... \n \n";
+
+$from = 2;
+//mongodb
+$camerasCollection = (new MongoDB\Client($params_mongodb_uri))->randcam->cameras;
+$cameras = $camerasCollection->find([], [
+  'limit' => $from,
+  'skip' => rand(0, $camerasCollection->count())
+]);
+$data = "";
+foreach ($cameras as $camera) {
+  $data .= hash('sha512', file_get_contents($camera['url']));
+};
+
+echo $data . " \n";

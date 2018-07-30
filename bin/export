@@ -1,0 +1,23 @@
+#!/usr/bin/env php
+<?php
+use Respect\Validation\Validator as v;
+
+include(__DIR__ . "/params.php");
+
+require 'vendor/autoload.php';
+
+echo "Exporting... \n";
+
+$camerasCollection = (new MongoDB\Client($params_mongodb_uri))->randcam->cameras;
+$export = $camerasCollection->find();
+$cameras = [];
+
+foreach ($export as $camera) {
+  $cameras[] = $camera['url'];
+};
+
+$fileName = "export/export-" . time() . ".json";
+
+file_put_contents($fileName, str_replace('\/', '/', json_encode($cameras)));
+
+echo "Saved in " . $fileName . " \n";
