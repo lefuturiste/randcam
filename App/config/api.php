@@ -1,2 +1,4 @@
 <?php
-return [];
+return [
+    'default_timeout' => 2
+];

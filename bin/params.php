@@ -1,4 +1,6 @@
 <?php
 
-$params_mongodb_uri = "mongodb://127.0.0.1:27017/randcam";
-$params_timeout = 1.5;
+require "../public/index.php";
+
+$params_mongodb_uri = $app->getContainer()->get('mongodb_uri');
+$params_timeout = $app->getContainer()->get('default_timeout');

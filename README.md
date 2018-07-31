@@ -1,32 +1,64 @@
-# Slim3 template API
+# Randcam
 
-This is simple template of slimframework 3 and integrations of others php librarys.
+Randcam is a way to generate randomness from ip cameras.
 
-## Quick install
+## Installation
 
-Just run a:
+this project use a mongodb database server
 
-`composer create-project lefuturiste/slim3-template-api-simple`
+- clone this repository
+- `composer install`
 
-Create a .env file in the root directory and fill it with env vars fields (you can get the list of the fields in .env.example)
+## Environment variable
 
-## The console
+- `MONGODB_URI` ex: mongodb://127.0.0.1:27017/randcam
 
-This template include console powered by symfony console:
+## Cli usage
 
-The console allowed this commands:
+### import
 
-### Local dev server
+import all urls in all json files in import directory
 
-- php console serve -> for run a local dev server with php cli
+`bin/import`
 
-## Maintenance mode
+### export
 
-(not finish)
+export all urls from databases to export folder
 
-Maintenance mode allow a independent maintenance mode from your web application.
+`bin/export`
 
-Maintenance mode is made for rename index.php file in web root directory (public) by _index.php and rename maintenance.php file by index.php file and vice versa.
+### add
 
-- php console maintenance open -> for enable maintenance mode
-- php console maintenance close -> for disable maintenance mode
+add a url and check
+
+`bin/add https://httpbin.org/image/png`
+
+### drop
+
+drop all urls from database
+
+`bin/drop`
+
+### random
+
+generate random string from cameras
+
+`bin/random`
+
+### random loop
+
+generate randomness in loop
+
+`bin/random_loop {int}`
+
+## Http api
+
+### get random data
+
+`GET /random`
+
+`GET /random/{length}`
+
+### get all cameras
+
+`GET /cameras`
